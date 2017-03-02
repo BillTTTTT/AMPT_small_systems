@@ -38,37 +38,37 @@ Also applied an eta gap in 2 particle cumulant calculation.
   
 #### Functions 
   
-def_ave_2particle_with_gap 			to calculate <2'> term in diferential flow, with eta gap.  
+"def_ave_2particle_with_gap" 			to calculate <2'> term in diferential flow, with eta gap.  
 
-def_ave_2particle_correlation		to calculate <2'> term in diferential flow, without eta gap.  
+"def_ave_2particle_correlation"		to calculate <2'> term in diferential flow, without eta gap.  
   
-def_ave_4particle_correlation		to calculate <4'> term in diferential flow.  
+"def_ave_4particle_correlation"		to calculate <4'> term in diferential flow.  
   
-with_gap_calculation				to calculate <2> term in reference flow, with eta gap.  
+"with_gap_calculation"				to calculate <2> term in reference flow, with eta gap.  
   
-ave_2particle_correlation 			to calculate <2> term in reference flow, without eta gap.  
+"ave_2particle_correlation" 			to calculate <2> term in reference flow, without eta gap.  
   
-ave_4particle_correlation 			to calculate <4> term in reference flow.  
+"ave_4particle_correlation" 			to calculate <4> term in reference flow.  
 
-ave_6particle_correlation 			to calculate <6> term in reference flow.  
+"ave_6particle_correlation" 			to calculate <6> term in reference flow.  
 
 The variable name "raai" (i.e. raa2) means reference flow: <<i>> (i.e. <<2>>). "daai" means diferential flow <<i>>.  
   
 #### Output
   
-comp_Ncharge			Multiplicity dependence of 2 particle cumulant method with eta gap.  
+"comp_Ncharge"			Multiplicity dependence of 2 particle cumulant method with eta gap.  
 
-raa2_Ncharge			Multiplicity dependence of <<2>> in reference flow.  
+"raa2_Ncharge"			Multiplicity dependence of <<2>> in reference flow.  
   
-raa4_Ncharge			Multiplicity dependence of <<4>> in reference flow.  
+"raa4_Ncharge"			Multiplicity dependence of <<4>> in reference flow.  
   
-raa6_Ncharge			Multiplicity dependence of <<6>> in reference flow.  
+"raa6_Ncharge"			Multiplicity dependence of <<6>> in reference flow.  
   
-daa2_Ncharge			Multiplicity dependence of <<2'>> in differential flow.  
+"daa2_Ncharge"			Multiplicity dependence of <<2'>> in differential flow.  
   
-daa4_Ncharge			Multiplicity dependence of <<4'>> in differential flow.  
+"daa4_Ncharge"			Multiplicity dependence of <<4'>> in differential flow.  
   
-dnch 					N_ch distribution
+"dnch" 					N_ch distribution
 
 
 
