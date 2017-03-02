@@ -1,7 +1,8 @@
 //-----------------------------------------------
-//Code to run AMPT
-//event plane method
-//
+//Code to run AMPT d+Au @ 200GeV
+//with event plane method
+//for particles in BBC, FVTXS, FVTXN, particles.
+//using 3-sub event method for resolution calc.
 //
 //Author: P. Yin
 //-----------------------------------------------
@@ -30,55 +31,55 @@
 
 using namespace std;
 
-//-----------------------------------------------------------------------------------
-//Structure declarations
+//-----------------------------------------------
+//Variables
+//-----------------------------------------------
+
 struct particle
 {
-	int   id;
-	float px;
-	float py;
-	float pz;
-	float m;
-	float x;
-	float y;
-	float z;
-	float t;
-	float eta;
-	float phi;
-	float pT;
-	float rsquare;
+    int   id;
+    float px;
+    float py;
+    float pz;
+    float x;
+    float y;
+    float z;
+    float eta;
+    float phi;
+    float pT;
 };
 
-//-----------------------------------------------------------------------------------
-//Global variables declarations
+//Number of nucleons in system
+// --> p+Au = 198
+// --> d+Au = 199
+// --> d+Pb = 210
+// --> p+Pb = 209
 
-//-----------------------------------------------------------------------------------
-//Vector declarations
-vector<particle> total_particles;
 //BBC [-3.9,-3)
-vector<particle> pBBCS;
+vector<particle> pA;
+vector<particle> total_particles;
 
 //FVTXS [-3,-1)
-vector<particle> pFVTXS;
+vector<particle> pB;
 
 //FVTXN [1,3)
-vector<particle> pFVTXN;
+vector<particle> pC;
 
-//-----------------------------------------------------------------------------------
-//Graphs declarations
-TProfile* v2s; //v2s
-TProfile* res_comp;
+TProfile* v2s_BBCS[6]; //v2s_BBCS
+// TProfile* v2s_FVTXS; //v2s_BBCS
+TProfile* res_comp[6];
+// TH1F* dhis_1;
+// TH1F* dhis_2;
+// TH1F* dhis_3;
 
-//-----------------------------------------------------------------------------------
-//Output file
+TH1F* dhis_bbcs;
+TH1F* dhis_fvtxs;
 
-//-----------------------------------------------------------------------------------
-//Test cout turn on/off set up
-bool test = false;
+TH1F* eta_distribution_no_selection;
 
-//-----------------------------------------------------------------------------------
-//Functions declarations
-void  processEvent(vector<particle> pA, vector<particle> pB, vector<particle> pC)
+TH1F *hcount;
+
+void  processEvent(int index)
 {
     if (pA.size() == 0) return;
 
@@ -101,6 +102,7 @@ void  processEvent(vector<particle> pA, vector<particle> pB, vector<particle> pC
     qxA = qxA / pA.size();
     qyA = qyA / pA.size();
     psiA = TMath::ATan2(qyA, qxA) / 2;
+    // cout << psiA << endl;
 
     for (unsigned int i = 0; i < pB.size(); i++)
     {
@@ -125,13 +127,24 @@ void  processEvent(vector<particle> pA, vector<particle> pB, vector<particle> pC
     //Calculate v2
     for (unsigned int i=0; i<total_particles.size(); i++)
     {
-    	float v2 = TMath::Cos(2 * (total_particles[i].phi - psiA));
-    	v2s->Fill(total_particles[i].pT, v2);
+        float v2 = TMath::Cos(2 * (total_particles[i].phi - psiA));
+        // float v2_fvtxs = TMath::Cos(2 * (total_particles[i].phi - psiB));
+        // if (total_particles[i].pT>0.2 && total_particles[i].pT<0.4) cout << v2 << endl;
+        v2s_BBCS[index]->Fill(total_particles[i].pT, v2);
+        // v2s_FVTXS->Fill(total_particles[i].pT, v2_fvtxs);
     }
 
-    res_comp->Fill(1.0, TMath::Cos(2 * (psiA - psiB)));
-    res_comp->Fill(2.0, TMath::Cos(2 * (psiA - psiC)));
-    res_comp->Fill(3.0, TMath::Cos(2 * (psiB - psiC)));
+    res_comp[index]->Fill(1.0, TMath::Cos(2 * (psiA - psiB)));
+    res_comp[index]->Fill(2.0, TMath::Cos(2 * (psiA - psiC)));
+    res_comp[index]->Fill(3.0, TMath::Cos(2 * (psiB - psiC)));
+
+    // res_comp->Fill(4.0, TMath::Cos(2 * (psiB - psiA)));
+    // res_comp->Fill(5.0, TMath::Cos(2 * (psiB - psiC)));
+    // res_comp->Fill(6.0, TMath::Cos(2 * (psiA - psiC)));
+
+    // dhis_1->Fill(psiA - psiB);
+    // dhis_2->Fill(psiA - psiC);
+    // dhis_3->Fill(psiB - psiC);
 }
 
 void parseampt()
@@ -162,6 +175,9 @@ void parseampt()
         int    nparttargelas;
         int    nparttarginelas;
         double junk;
+
+        int ct_bbcs = 0;
+        int ct_fvtxs = 0;
 
         //Get the header of each event
         dataFile >> evtnumber >> testnum >> nlist >> impactpar >> npartproj >> nparttarg >> npartprojelas >> npartprojinelas >> nparttargelas >> nparttarginelas >> junk;
@@ -203,73 +219,115 @@ void parseampt()
             p.py  = pv[1];
             p.pz  = pv[2];
 
+            eta_distribution_no_selection->Fill(p.eta);
+
             //mid-rapidity
-            if (p.eta > -0.5 && p.eta < 0.5)
+            if (p.eta > -0.35 && p.eta < 0.35)
             {
                 total_particles.push_back(p);
             }
 
             //BBCS
-            if (p.eta > -3.9 && p.eta < -3.1) pBBCS.push_back(p);
+            if (p.eta > -3.9 && p.eta < -3.1) 
+            {
+                pA.push_back(p);
+                ct_bbcs++;
+                hcount->Fill(0);
+            }
 
             //FVTXS
-            if (p.eta > -3.1 && p.eta < -1.0) pFVTXS.push_back(p);
+            if (p.eta > -3.1 && p.eta < -1.0) 
+            {
+                pB.push_back(p);
+                ct_fvtxs++;
+                hcount->Fill(1);
+            }
 
             //FVTXN
-            if (p.eta > 1.0 && p.eta <  3.1) pFVTXN.push_back(p);
+            if (p.eta > 1.0 && p.eta <  3.1) pC.push_back(p);
 
         }
 
-        processEvent(pBBCS, pFVTXS, pFVTXN);
+        dhis_bbcs->Fill(ct_bbcs);
+        // dhis_fvtxs->Fill(ct_fvtxs);
 
-        pBBCS.clear();
-        pFVTXS.clear();
-        pFVTXN.clear();
+        // cout << total_particles.size() << endl;
+        if (ct_bbcs >= 28) processEvent(0);
+        if (ct_bbcs >= 24 && ct_bbcs < 28) processEvent(1);
+        if (ct_bbcs >= 19 && ct_bbcs < 24) processEvent(2);
+        if (ct_bbcs >= 12 && ct_bbcs < 19) processEvent(3);
+        if (ct_bbcs >=  7 && ct_bbcs < 12) processEvent(4);
+        if (ct_bbcs < 7) processEvent(5);
+
+        pA.clear();
+        pB.clear();
+        pC.clear();
 
         total_particles.clear();
+
+        hcount->Fill(2);
 
         if (!dataFile) break;
     }
 }
 
-void event_plane()
+void f1_ep_BBCS_0()
 {
-	v2s = new TProfile("v2s", "v2s", 9, 0.2, 2, -1.0, 1.0);
-    res_comp = new TProfile("res_comp", "res_comp", 3, 0.5, 3.5, -1.0, 1.0);
+    v2s_BBCS[0] = new TProfile("v2s_BBCS_0", "v2s_BBCS_0", 14, 0.2, 3, -1.0, 1.0);
+    res_comp[0] = new TProfile("res_comp_0", "res_comp_0", 6, 0.5, 6.5, -1.0, 1.0);
+
+    v2s_BBCS[1] = new TProfile("v2s_BBCS_1", "v2s_BBCS_1", 14, 0.2, 3, -1.0, 1.0);
+    res_comp[1] = new TProfile("res_comp_1", "res_comp_1", 6, 0.5, 6.5, -1.0, 1.0);
+
+    v2s_BBCS[2] = new TProfile("v2s_BBCS_2", "v2s_BBCS_2", 14, 0.2, 3, -1.0, 1.0);
+    res_comp[2] = new TProfile("res_comp_2", "res_comp_2", 6, 0.5, 6.5, -1.0, 1.0);
+
+    v2s_BBCS[3] = new TProfile("v2s_BBCS_3", "v2s_BBCS_3", 14, 0.2, 3, -1.0, 1.0);
+    res_comp[3] = new TProfile("res_comp_3", "res_comp_3", 6, 0.5, 6.5, -1.0, 1.0);
+
+    v2s_BBCS[4] = new TProfile("v2s_BBCS_4", "v2s_BBCS_4", 14, 0.2, 3, -1.0, 1.0);
+    res_comp[4] = new TProfile("res_comp_4", "res_comp_4", 6, 0.5, 6.5, -1.0, 1.0);
+
+    v2s_BBCS[5] = new TProfile("v2s_BBCS_5", "v2s_BBCS_5", 14, 0.2, 3, -1.0, 1.0);
+    res_comp[5] = new TProfile("res_comp_5", "res_comp_5", 6, 0.5, 6.5, -1.0, 1.0);
+    // v2s_FVTXS = new TProfile("v2s_FVTXS", "v2s_FVTXS", 14, 0.2, 3, -1.0, 1.0);
+    // dhis_1 = new TH1F("dhis_1", "dhis_1", 50, -0.5*TMath::Pi(), 1.5*TMath::Pi());
+    // dhis_2 = new TH1F("dhis_2", "dhis_2", 50, -0.5*TMath::Pi(), 1.5*TMath::Pi());
+    // dhis_3 = new TH1F("dhis_3", "dhis_3", 50, -0.5*TMath::Pi(), 1.5*TMath::Pi());
+
+    dhis_bbcs = new TH1F("dhis_bbcs", "dhis_bbcs", 200, -0.5, 199.5);
+    // dhis_fvtxs = new TH1F("dhis_fvtxs", "dhis_fvtxs", 200, -0.5, 199.5);
+
+    eta_distribution_no_selection = new TH1F("eta_distribution_no_selection", "eta_distribution_no_selection", 200, -10, 10);
+
+    hcount = new TH1F("hcount", "count", 6, 0, 6);
 
     //Make a file to store outputs
-    TFile *fout = new TFile("eplane.root", "RECREATE");
+    TFile *fout = new TFile("ep_bbcs_0.root", "RECREATE");
 
     parseampt();
 
     //Save graphs
-    v2s->Write();
-    res_comp->Write();
 
+    for (int i=0; i<6; i++)
+    {
+        v2s_BBCS[i]->Write();
+        res_comp[i]->Write();
+    }
+    
+    // v2s_FVTXS->Write();
+    // dhis_1->Write();
+    // dhis_2->Write();
+    // dhis_3->Write();
+    hcount->Write();
+
+    eta_distribution_no_selection->Write();
+
+    dhis_bbcs->Write();
+    // dhis_fvtxs->Write();
+    
     fout->Close();
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
