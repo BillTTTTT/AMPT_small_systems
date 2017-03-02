@@ -4,8 +4,12 @@
 
 This code is made to run on AMPT version "Ampt-v1.26t5-v2.26t5".  
 You can get this version of AMPT from the following link:
-http://myweb.ecu.edu/linz/ampt/
-
+http://myweb.ecu.edu/linz/ampt/  
+  
+With Javier's modified of Hulthen wavefunction input. The modified file could be found on rcf: /direct/phenix+u/pengqi/work/Ampt-v1.26t5-v2.26t5/hijing1.383_ampt.f  
+  
+  
+  
 ## Description of each file
 
 ### event_plane.C
