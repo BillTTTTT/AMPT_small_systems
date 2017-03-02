@@ -24,7 +24,7 @@ TProfile "v2s[i]" contains v2_pt histogram without modified by resolution. TProf
   
 It also contains N_ch distribution of BBCS (and FVTXS if need), eta distribution.  
   
-To run this code, use the following command: root event_plane.C++  
+#### To run this code, use the following command: root event_plane.C++  
 
 ### cumulant.C
 
@@ -69,6 +69,76 @@ The variable name "raai" (i.e. raa2) means reference flow: <<i>> (i.e. <<2>>). "
 "daa4_Ncharge"			Multiplicity dependence of <<4'>> in differential flow.  
   
 "dnch" 					N_ch distribution
+
+#### To run this code, use the following command: root cumulant.C++  
+
+### parton_pplane
+  
+This code is directly copied from rcf on Mar 2, 2017. Guaranteed could be run from rcf.  
+  
+Written in C++, applying participant plane calculation with partons.  
+  
+Applied centrality cut.
+  
+#### Functions
+  
+"parse_afterPropagation_file"  
+Parse initial state partons "ana/parton-initial-afterPropagation.dat"  
+  
+"parse_ampt_file"  
+Parse final state nucleons "ana/ampt.dat"  
+  
+"processEvent_melting"  
+Using partons info to calculate participant plane Psi_PP.  
+  
+"processEvent_ampt"  
+Calculate v_2.  
+  
+#### Output
+  
+"v2s"  
+Multiplicity dependence of v2.  
+  
+"v2s_pt[i]"  
+p_T dependence of v2 in different centrality range.  
+  
+"epsilon2_nch"  
+Multiplicity dependence of epsilon_2.  
+  
+"dhis_eta"  
+eta distribution.  
+  
+"dhis_b"  
+impact parameter distribution.  
+  
+#### To run this code, use the following command: root parton_pplane.C++  
+  
+###
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
