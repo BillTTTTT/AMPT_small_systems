@@ -10,23 +10,18 @@ http://myweb.ecu.edu/linz/ampt/
 
 ### event_plane.C
 
-There are two version of event_plane.C uploaded. 
-One is "first commit". The other is "updated"
+This code is copied from rcf on Mar 2, 2017. Guaranteed could be run directly from rcf.  
 
-#### "First commit" version
+Written in C++ to apply Event Plane method with three-sub events resolution. Three-sub events come from BBCS, FVTXS, FCTXN.  
 
-This code is written in C++ to apply Event Plane method with three-sub events resolution. Three-sub events come from BBCS, FVTXS, FCTXN.  
+Applied 6 ranges centrality cut.
   
 Three-sub events method formula could be found in paper "Methods for analyzing anisotropic flow in relativistic nuclear collisions", equation 16. Or ask anyone in Nagle Lab.  
   
-function "processEvent" is used to compute Q vector and calculate resolution. The first part of numerator (of resolution formula) is filled in first bin of TProfile "res_comp". The second part of numerator is filled in second bin of TProfile "res_comp". The denominator is filled in the third bin.  
+Function "processEvent" is used to compute Q vector and calculate resolution. The first part of numerator (of resolution formula) is filled in first bin of TProfile "res_comp". The second part of numerator is filled in second bin of TProfile "res_comp". The denominator is filled in the third bin.  
   
-Two TProfile will be written into output file. TProfile "v2s" contains v2_pt histogram without modified by resolution. TProfile "res_comp" contains three parts of resolution formula.  
+TProfile "v2s[i]" contains v2_pt histogram without modified by resolution. TProfile "res_comp[i]" contains three parts of resolution formula.  
   
-#### "Update" version
-
-This code is copied from rcf on Mar 2, 2017. Guaranteed could be run directly from rcf.  
+It also contains N_ch distribution of BBCS (and FVTXS if need), eta distribution.  
   
-This version contains everything in "First commit" version. But it applied centrality cut of 6 range.
-  
-It also contains N_ch distribution of BBCS (and FVTXS if need), eta distribution.
+To run this code, use the following command: root event_plane.C++
