@@ -10,9 +10,9 @@ http://myweb.ecu.edu/linz/ampt/
 
 ### event_plane.C
 
-This code is copied from rcf on Mar 2, 2017. Guaranteed could be run directly from rcf.  
+This code is directly copied from rcf on Mar 2, 2017. Guaranteed could be run from rcf.  
 
-Written in C++ to apply Event Plane method with three-sub events resolution. Three-sub events come from BBCS, FVTXS, FCTXN.  
+Written in C++, applying Event Plane method with three-sub events resolution. Three-sub events come from BBCS, FVTXS, FCTXN.  
 
 Applied 6 ranges centrality cut.
   
@@ -24,4 +24,69 @@ TProfile "v2s[i]" contains v2_pt histogram without modified by resolution. TProf
   
 It also contains N_ch distribution of BBCS (and FVTXS if need), eta distribution.  
   
-To run this code, use the following command: root event_plane.C++
+To run this code, use the following command: root event_plane.C++  
+
+### cumulant.C
+
+This code is directly copied from rcf on Mar 2, 2017. Guaranteed could be run from rcf.
+
+Written in C++, applying Multi-particle Correlation (Cumulant) Method with Ron's help with 4 and 6 particle cumulant equation. This file contains reference flow of 2,4,6 particle cumulant (usually used part in my project). And diferential flow of 2,4 particle cumulant (not often used in my projects). Formula and theory could be found from following paper: 
+
+Flow analysis with cumulants: direct calculations, A. Bilandzic, R. Snellings, S. Voloshin, Phys.Rev.C83:044913,2011, (or arXiv:1010.0233v2)  
+  
+Also applied an eta gap in 2 particle cumulant calculation.  
+  
+#### Functions 
+  
+def_ave_2particle_with_gap 			to calculate <2'> term in diferential flow, with eta gap.  
+
+def_ave_2particle_correlation		to calculate <2'> term in diferential flow, without eta gap.  
+  
+def_ave_4particle_correlation		to calculate <4'> term in diferential flow.  
+  
+with_gap_calculation				to calculate <2> term in reference flow, with eta gap.  
+  
+ave_2particle_correlation 			to calculate <2> term in reference flow, without eta gap.  
+  
+ave_4particle_correlation 			to calculate <4> term in reference flow.  
+
+ave_6particle_correlation 			to calculate <6> term in reference flow.  
+
+The variable name "raai" (i.e. raa2) means reference flow: <<i>> (i.e. <<2>>). "daai" means diferential flow <<i>>.  
+  
+#### Output
+  
+comp_Ncharge			Multiplicity dependence of 2 particle cumulant method with eta gap.  
+
+raa2_Ncharge			Multiplicity dependence of <<2>> in reference flow.  
+  
+raa4_Ncharge			Multiplicity dependence of <<4>> in reference flow.  
+  
+raa6_Ncharge			Multiplicity dependence of <<6>> in reference flow.  
+  
+daa2_Ncharge			Multiplicity dependence of <<2'>> in differential flow.  
+  
+daa4_Ncharge			Multiplicity dependence of <<4'>> in differential flow.  
+  
+dnch 					N_ch distribution
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
