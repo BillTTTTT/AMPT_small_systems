@@ -25,7 +25,11 @@ TProfile "v2s[i]" contains v2_pt histogram without modified by resolution. TProf
 It also contains N_ch distribution of BBCS (and FVTXS if need), eta distribution.  
   
 #### To run this code, use the following command: root event_plane.C++  
-
+  
+  
+  
+  
+  
 ### cumulant.C
 
 This code is directly copied from rcf on Mar 2, 2017. Guaranteed could be run from rcf.
@@ -71,14 +75,18 @@ The variable name "raai" (i.e. raa2) means reference flow: <<i>> (i.e. <<2>>). "
 "dnch" 					N_ch distribution
 
 #### To run this code, use the following command: root cumulant.C++  
-
+  
+  
+  
+  
+  
 ### parton_pplane
   
 This code is directly copied from rcf on Mar 2, 2017. Guaranteed could be run from rcf.  
   
 Written in C++, applying participant plane calculation with partons.  
   
-Applied centrality cut.
+Applied centrality cut.  
   
 #### Functions
   
@@ -113,15 +121,23 @@ impact parameter distribution.
   
 #### To run this code, use the following command: root parton_pplane.C++  
   
-###
+  
+  
+  
+  
+### nucleon_pplane.C
+  
+Not from rcf. Last modified during summer of 2016. Didn't use for a long time.  
+  
+Written in C++, applying participant plane calculation with nucleons.  
+  
+Not sure if capable for version "Ampt-v1.26t5-v2.26t5". Maybe need change data file name.  
+  
+Applying participant plane calculation with nucleons.  
 
-
-
-
-
-
-
-
+Applied nuclei smear calculation obtained from Javier. More info, please ask Javier.  
+  
+Not recommend to use this code...
 
 
 
