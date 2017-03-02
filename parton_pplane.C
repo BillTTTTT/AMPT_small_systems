@@ -1,6 +1,6 @@
 //-----------------------------------------------
-//Code for Parton participant plane calculation
-//AMPT model
+//Code to run AMPT
+//participant plane method with partons
 //
 //
 //Author: P. Yin
@@ -57,13 +57,25 @@ int event_counter = 0;
 vector<particle> partons;
 
 vector<float> psi2;
+vector<float> ep2;
 
 vector<particle> final_p;
 
 //-----------------------------------------------------------------------------------
 //Graphs declarations
 TProfile* v2s;
-TProfile* v2s_pt;
+TProfile* v2s_pt[6];
+
+TProfile* epsilon2_nch;
+
+TH1F *epsilon2_dis;
+TH1F *dhis_v2;
+
+TH1F *dhis_qn;
+
+TH1F *dhis_b;
+
+TH1F *dhis_eta;
 
 //-----------------------------------------------------------------------------------
 //Output file
@@ -74,7 +86,6 @@ bool test = false;
 
 //-----------------------------------------------------------------------------------
 //Functions declarations
-//Calculate parton participant plane system
 void  processEvent_melting()
 {
 	float cmx = 0;
@@ -120,17 +131,21 @@ void  processEvent_melting()
 	qx2 = qx2 / (float)count;
 	qy2 = qy2 / (float)count;
 
-	qx3 = qx3 / (float)count;
-	qy3 = qy3 / (float)count;
+	// qx3 = qx3 / (float)count;
+	// qy3 = qy3 / (float)count;
 
 	aver2    = aver2 / (float)count;
 
 	float temp_psi2 = (TMath::ATan2(qy2, qx2) + TMath::Pi()) / 2;
+	float e2 = TMath::Sqrt(qx2 * qx2 + qy2 * qy2) / aver2;
 
+	epsilon2_dis->Fill(e2);
+
+	ep2.push_back(e2);
 	psi2.push_back(temp_psi2);
 }
 
-//parse initial state particles file
+
 void parse_afterPropagation_file()
 {
 	//Read in data file
@@ -203,19 +218,63 @@ void parse_afterPropagation_file()
 	}
 }
 
-//Calculate v2 vs. pt and N_charge
-void  processEvent_ampt(int evtnumber, int ncharge)
+
+void  processEvent_ampt(int evtnumber, int ncharge, int index)
 {
 	//Calculate v2
 	for (unsigned int i=0; i<final_p.size(); i++)
 	{
 		float v2 = TMath::Cos(2 * (final_p[i].phi - psi2[evtnumber]));
 		v2s->Fill(ncharge, v2);
-		v2s_pt->Fill(final_p[i].pT, v2);
+		v2s_pt[index]->Fill(final_p[i].pT, v2);
+		
+		dhis_v2->Fill(v2);
 	}
+
+	epsilon2_nch->Fill(ncharge, ep2[evtnumber]);
+
+	float cmx = 0;
+	float cmy = 0;
+	float qx2 = 0;
+	float qy2 = 0;
+	float aver2 = 0;
+
+	for (unsigned int i = 0; i < final_p.size(); i++)
+	{
+		cmx = cmx + final_p[i].x;
+		cmy = cmy + final_p[i].y;
+	}
+
+	int count = final_p.size();
+
+	cmx = cmx / (float)count;
+	cmy = cmy / (float)count;
+
+	for (unsigned int i = 0; i < final_p.size(); i++)
+	{
+		//Shift to center of mass frame
+		final_p[i].x = final_p[i].x - cmx;
+		final_p[i].y = final_p[i].y - cmy;
+
+		final_p[i].phi = TMath::ATan2(final_p[i].y, final_p[i].x);
+	}
+
+	for (unsigned int i = 0; i < final_p.size(); i++)
+	{
+		qx2 = qx2 + TMath::Cos(2 * final_p[i].phi);
+		qy2 = qy2 + TMath::Sin(2 * final_p[i].phi);
+	}
+
+	float numerator = TMath::Sqrt(qx2 * qx2 + qy2 * qy2);
+	float denominator = TMath::Sqrt(final_p.size());
+
+	float qn = numerator / denominator;
+
+	dhis_qn->Fill(qn);
+
 }
 
-//parse final state partilces code
+
 void parse_ampt_file()
 {
     //Read in data file
@@ -247,11 +306,14 @@ void parse_ampt_file()
         double junk;
 
         int    ncharge = 0;
+        int ct_bbcs = 0;
 
         //Get the header of each event
         dataFile >> evtnumber >> testnum >> nlist >> impactpar >> npartproj >> nparttarg >> npartprojelas >> npartprojinelas >> nparttargelas >> nparttarginelas >> junk;
 
         if (!dataFile) break;
+
+        dhis_b->Fill(impactpar);
 
         //Analysis each particle in the event
         for (int i = 0; i < nlist; i++)
@@ -286,14 +348,24 @@ void parse_ampt_file()
             p.py  = pv[1];
             p.pz  = pv[2];
 
-            if (abs(p.eta) > 1 && abs(p.eta) < 3  && p.pT > 0.3 && p.pT < 3) 
+            dhis_eta->Fill(p.eta);
+
+            if (p.eta > -0.35 && p.eta < 0.35) 
             {
             	final_p.push_back(p);
             	ncharge++;
             }
 
+            if (p.eta > -3.9 && p.eta < -3.1)  ct_bbcs++;
+
         }
-        processEvent_ampt(event_counter, ncharge);
+
+        if (ct_bbcs >= 28) processEvent_ampt(event_counter, ncharge, 0);
+        if (ct_bbcs >= 24 && ct_bbcs < 28) processEvent_ampt(event_counter, ncharge, 1);
+        if (ct_bbcs >= 19 && ct_bbcs < 24) processEvent_ampt(event_counter, ncharge, 2);
+        if (ct_bbcs >= 12 && ct_bbcs < 19) processEvent_ampt(event_counter, ncharge, 3);
+        if (ct_bbcs >=  7 && ct_bbcs < 12) processEvent_ampt(event_counter, ncharge, 4);
+        if (ct_bbcs < 7) processEvent_ampt(event_counter, ncharge, 5);
 
         final_p.clear();
 
@@ -306,18 +378,37 @@ void parse_ampt_file()
 
 void parton_pplane()
 {
-    TFile *fout = new TFile("parton_pplane.root", "RECREATE");
+    TFile *fout = new TFile("ppplane.root", "RECREATE");
 
     // 60, -0.5, 599.5, -10, 10
     // 50, -0.5, 499.5, -10, 10     
     // 100, -0.5, 5999.5, -10, 10 Pb+Pb
     // 50, -0.5, 199.5, -10, 10    d+Au
-    v2s = new TProfile("v2s", "v2s", 50, -0.5, 199.5, -10, 10); //
-    v2s_pt = new TProfile("v2s_pt", "v2s_pt", 13, 0.2, 3, -1.0, 1.0);
+    v2s = new TProfile("v2s", "v2s", 100, -0.5, 1499.5, -10, 10); //
+    v2s_pt[0] = new TProfile("v2s_pt_0", "v2s_pt_0", 15, 0.0, 3.0, -1.0, 1.0);
+    v2s_pt[1] = new TProfile("v2s_pt_1", "v2s_pt_1", 15, 0.0, 3.0, -1.0, 1.0);
+    v2s_pt[2] = new TProfile("v2s_pt_2", "v2s_pt_2", 15, 0.0, 3.0, -1.0, 1.0);
+    v2s_pt[3] = new TProfile("v2s_pt_3", "v2s_pt_3", 15, 0.0, 3.0, -1.0, 1.0);
+    v2s_pt[4] = new TProfile("v2s_pt_4", "v2s_pt_4", 15, 0.0, 3.0, -1.0, 1.0);
+    v2s_pt[5] = new TProfile("v2s_pt_5", "v2s_pt_5", 15, 0.0, 3.0, -1.0, 1.0);
+
+    epsilon2_nch = new TProfile("epsilon2_nch", "epsilon2_nch", 100, -0.5, 1499.5, -10, 10); //
+
+    dhis_v2 = new TH1F("dhis_v2", "dhis_v2", 200, -1, 1);
+    epsilon2_dis = new TH1F("epsilon2_dis", "epsilon2_dis", 100, -0.01, 0.99);
+    dhis_qn = new TH1F("dhis_qn", "dhis_qn", 200, 0, 20);
+    dhis_b = new TH1F("dhis_b", "dhis_b", 50, 0, 20);
+    dhis_eta = new TH1F("dhis_eta", "dhis_eta", 100, -10, 10);
 
     parse_afterPropagation_file();
     parse_ampt_file();
 
+    //v2s->Write();
+    //v2s_pt->Write();
+    //epsilon2_dis->Write();
+    //dhis_v2->Write();
+    //dhis_qn->Write();
+    
     fout->Write();
     fout->Close();
 }
