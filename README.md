@@ -14,7 +14,7 @@ With Javier's modified of Hulthen wavefunction input. The modified file could be
 
 ### event_plane.C
 
-This code is directly copied from rcf on Mar 2, 2017. Guaranteed could be run from rcf.  
+This code could be run directly at rcf.  
 
 Written in C++, applying Event Plane method with three-sub events resolution. Three-sub events come from BBCS, FVTXS, FCTXN.  
 
@@ -36,7 +36,7 @@ It also contains N_ch distribution of BBCS (and FVTXS if need), eta distribution
   
 ### cumulant.C
 
-This code is directly copied from rcf on Mar 2, 2017. Guaranteed could be run from rcf.
+This code could be run directly at rcf. 
 
 Written in C++, applying Multi-particle Correlation (Cumulant) Method with Ron's help with 4 and 6 particle cumulant equation. This file contains reference flow of 2,4,6 particle cumulant (usually used part in my project). And diferential flow of 2,4 particle cumulant (not often used in my projects). Formula and theory could be found from following paper: 
 
@@ -86,7 +86,7 @@ The variable name "raai" (i.e. raa2) means reference flow: <<i>> (i.e. <<2>>). "
   
 ### parton_pplane.C
   
-This code is directly copied from rcf on Mar 2, 2017. Guaranteed could be run from rcf.  
+This code could be run directly at rcf.   
   
 Written in C++, applying participant plane calculation with partons.  
   
@@ -124,24 +124,6 @@ eta distribution.
 impact parameter distribution.  
   
 #### To run this code, use the following command: root parton_pplane.C++  
-  
-  
-  
-  
-  
-### nucleon_pplane.C
-  
-Not from rcf. Last modified during summer of 2016. Didn't use for a long time.  
-  
-Written in C++, applying participant plane calculation with nucleons.  
-  
-Not sure if capable for version "Ampt-v1.26t5-v2.26t5". Maybe need change data file name.  
-  
-Applying participant plane calculation with nucleons.  
-
-Applied nuclei smear calculation obtained from Javier. More info, please ask Javier.  
-  
-Not recommend to use this code...
 
 
 
