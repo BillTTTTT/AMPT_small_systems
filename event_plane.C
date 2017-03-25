@@ -29,6 +29,8 @@
 #include "TProfile.h"
 #include "TF1.h"
 
+#include "range.h"
+
 using namespace std;
 
 //-----------------------------------------------
@@ -222,13 +224,14 @@ void parseampt()
             eta_distribution_no_selection->Fill(p.eta);
 
             //mid-rapidity
-            if (p.eta > -0.35 && p.eta < 0.35)
+            // if (p.eta > -0.35 && p.eta < 0.35)
+            if (ifCNT(p.eta))
             {
                 total_particles.push_back(p);
             }
 
             //BBCS
-            if (p.eta > -3.9 && p.eta < -3.1) 
+            if (ifBBCS(p.eta)) 
             {
                 pA.push_back(p);
                 ct_bbcs++;
@@ -236,7 +239,7 @@ void parseampt()
             }
 
             //FVTXS
-            if (p.eta > -3.1 && p.eta < -1.0) 
+            if (ifFVTXS(p.eta)) 
             {
                 pB.push_back(p);
                 ct_fvtxs++;
@@ -244,7 +247,7 @@ void parseampt()
             }
 
             //FVTXN
-            if (p.eta > 1.0 && p.eta <  3.1) pC.push_back(p);
+            if (ifFVTXN(p.eta)) pC.push_back(p);
 
         }
 

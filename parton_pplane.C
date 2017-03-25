@@ -27,6 +27,8 @@
 #include "TProfile.h"
 #include "TF1.h"
 
+#include "range.h"
+
 using namespace std;
 
 //-----------------------------------------------------------------------------------
@@ -350,13 +352,13 @@ void parse_ampt_file()
 
             dhis_eta->Fill(p.eta);
 
-            if (p.eta > -0.35 && p.eta < 0.35) 
+            if (ifCNT(p.eta)) 
             {
             	final_p.push_back(p);
             	ncharge++;
             }
 
-            if (p.eta > -3.9 && p.eta < -3.1)  ct_bbcs++;
+            if (ifBBCS(p.eta)) ct_bbcs++;
 
         }
 

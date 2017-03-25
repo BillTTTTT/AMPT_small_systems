@@ -28,6 +28,8 @@
 #include "TProfile.h"
 #include "TF1.h"
 
+#include "range.h"
+
 using namespace std;
 
 //-----------------------------------------------------------------------------------
@@ -442,7 +444,7 @@ void parseampt(int file_n)
 			p.py  = pv[1];
 			p.pz  = pv[2];
 
-			if (abs(p.eta) > 1 && abs(p.eta) < 3 && p.pT > 0.3 && p.pT < 3)
+			if (ifFVTX(p.eta) && p.pT > 0.3 && p.pT < 3)
 			{
 				all_particle.push_back(p);
 				n_charge++;
