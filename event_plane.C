@@ -127,26 +127,20 @@ void  processEvent(int index)
     psiC = TMath::ATan2(qyC, qxC) / 2;
 
     //Calculate v2
-    for (unsigned int i=0; i<total_particles.size(); i++)
+    for (unsigned int i=0; i<pC.size(); i++)
     {
-        float v2 = TMath::Cos(2 * (total_particles[i].phi - psiA));
-        // float v2_fvtxs = TMath::Cos(2 * (total_particles[i].phi - psiB));
-        // if (total_particles[i].pT>0.2 && total_particles[i].pT<0.4) cout << v2 << endl;
-        v2s_BBCS[index]->Fill(total_particles[i].pT, v2);
-        // v2s_FVTXS->Fill(total_particles[i].pT, v2_fvtxs);
+        float v2 = TMath::Cos(2 * (pC[i].phi - psiA));
+        v2s_BBCS[index]->Fill(pC[i].pT, v2);
     }
+    // for (unsigned int i=0; i<total_particles.size(); i++)
+    // {
+    //     float v2 = TMath::Cos(2 * (total_particles[i].phi - psiA));
+    //     v2s_BBCS[index]->Fill(total_particles[i].pT, v2);
+    // }
 
     res_comp[index]->Fill(1.0, TMath::Cos(2 * (psiA - psiB)));
     res_comp[index]->Fill(2.0, TMath::Cos(2 * (psiA - psiC)));
     res_comp[index]->Fill(3.0, TMath::Cos(2 * (psiB - psiC)));
-
-    // res_comp->Fill(4.0, TMath::Cos(2 * (psiB - psiA)));
-    // res_comp->Fill(5.0, TMath::Cos(2 * (psiB - psiC)));
-    // res_comp->Fill(6.0, TMath::Cos(2 * (psiA - psiC)));
-
-    // dhis_1->Fill(psiA - psiB);
-    // dhis_2->Fill(psiA - psiC);
-    // dhis_3->Fill(psiB - psiC);
 }
 
 void parseampt()
@@ -227,13 +221,13 @@ void parseampt()
             // if (p.eta > -0.35 && p.eta < 0.35)
             if (ifCNT(p.eta))
             {
-                total_particles.push_back(p);
+                pC.push_back(p);
             }
 
             //BBCS
             if (ifBBCS(p.eta)) 
             {
-                pA.push_back(p);
+                pB.push_back(p);
                 ct_bbcs++;
                 hcount->Fill(0);
             }
@@ -241,13 +235,13 @@ void parseampt()
             //FVTXS
             if (ifFVTXS(p.eta)) 
             {
-                pB.push_back(p);
+                pA.push_back(p);
                 ct_fvtxs++;
                 hcount->Fill(1);
             }
 
             //FVTXN
-            if (ifFVTXN(p.eta)) pC.push_back(p);
+            // if (ifFVTXN(p.eta)) pC.push_back(p);
 
         }
 
@@ -266,7 +260,7 @@ void parseampt()
         pB.clear();
         pC.clear();
 
-        total_particles.clear();
+        // total_particles.clear();
 
         hcount->Fill(2);
 
