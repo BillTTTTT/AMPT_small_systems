@@ -1,8 +1,9 @@
 //-----------------------------------------------
-//Code to run AMPT
-//with 2,4,6-particle correlation.
+// Multi-particle cumulant method
 //
-//Author: P. Yin
+// 2,4,6-particle cumulant.
+//
+// Author: P. Yin
 //-----------------------------------------------
 
 #include <iostream>

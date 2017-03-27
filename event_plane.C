@@ -1,10 +1,10 @@
 //-----------------------------------------------
-//Code to run AMPT d+Au @ 200GeV
-//with event plane method
-//for particles in BBC, FVTXS, FVTXN, particles.
-//using 3-sub event method for resolution calc.
+// Event Plane Method
 //
-//Author: P. Yin
+// 3-sub event method resolution from:
+// BBC, FVTXS, CNT particles.
+//
+// Author: P. Yin
 //-----------------------------------------------
 
 #include <iostream>

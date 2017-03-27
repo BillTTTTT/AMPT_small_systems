@@ -1,9 +1,7 @@
 //-----------------------------------------------
-//Code to run AMPT
-//participant plane method with partons
+// Parton Participant Plane Method
 //
-//
-//Author: P. Yin
+// Author: P. Yin
 //-----------------------------------------------
 #include <iostream>
 #include <iomanip>
