@@ -26,7 +26,7 @@ bool ifFVTXN(double eta)
 // 1.0 < eta < 3.0  or  -3.0 < eta < -1.0
 bool ifFVTX(double eta)
 {
-	if (abs(eta) > 1.0 && abs(eta) < 3.0) return true;
+	if (ifFVTXS(eta) || ifFVTXN(eta)) return true;
 	else return false;
 }
 

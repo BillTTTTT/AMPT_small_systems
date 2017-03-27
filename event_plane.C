@@ -51,28 +51,20 @@ struct particle
     float pT;
 };
 
-//Number of nucleons in system
-// --> p+Au = 198
-// --> d+Au = 199
-// --> d+Pb = 210
-// --> p+Pb = 209
-
 vector<particle> pA;
 vector<particle> pB;
 vector<particle> pC;
 
-TProfile* v2s_BBCS[6]; //v2s_BBCS
+TProfile* v2s_FVTXS[6];
 TProfile* res_comp[6];
-// TH1F* dhis_1;
-// TH1F* dhis_2;
-// TH1F* dhis_3;
 
 TH1F* dhis_bbcs;
-TH1F* dhis_fvtxs;
+TH1F* hcount;
 
-TH1F* eta_distribution_no_selection;
+TH2D *eff_fvtx_s;
+TH2D *eff_fvtx_n;
 
-TH1F *hcount;
+TF1 *frandom;
 
 void  processEvent(int index)
 {
@@ -97,7 +89,6 @@ void  processEvent(int index)
     qxA = qxA / pA.size();
     qyA = qyA / pA.size();
     psiA = TMath::ATan2(qyA, qxA) / 2;
-    // cout << psiA << endl;
 
     for (unsigned int i = 0; i < pB.size(); i++)
     {
@@ -123,12 +114,38 @@ void  processEvent(int index)
     for (unsigned int i=0; i<pC.size(); i++)
     {
         float v2 = TMath::Cos(2 * (pC[i].phi - psiA));
-        v2s_BBCS[index]->Fill(pC[i].pT, v2);
+        v2s_FVTXS[index]->Fill(pC[i].pT, v2);
     }
 
     res_comp[index]->Fill(1.0, TMath::Cos(2 * (psiA - psiB)));
     res_comp[index]->Fill(2.0, TMath::Cos(2 * (psiA - psiC)));
     res_comp[index]->Fill(3.0, TMath::Cos(2 * (psiB - psiC)));
+}
+
+bool test_eff_s(float pT, float eta)
+{
+    int pTbin = eff_fvtx_s->GetXaxis()->FindBin(pT);
+    int etabin = eff_fvtx_s->GetYaxis()->FindBin(eta);
+
+    float n = eff_fvtx_s->GetBinContent(pTbin, etabin);
+
+    float test = frandom->GetRandom();
+
+    if (test < n) return true;
+    else return false;
+}
+
+bool test_eff_n(float pT, float eta)
+{
+    int pTbin = eff_fvtx_n->GetXaxis()->FindBin(pT);
+    int etabin = eff_fvtx_n->GetYaxis()->FindBin(eta);
+
+    float n = eff_fvtx_n->GetBinContent(pTbin, etabin);
+
+    float test = frandom->GetRandom();
+
+    if (test < n) return true;
+    else return false;
 }
 
 void parseampt()
@@ -179,13 +196,11 @@ void parseampt()
             dataFile >> partid >> pv[0] >> pv[1] >> pv[2] >> mass >> space[0] >> space[1] >> space[2] >> space[3];
 
             //Skip non-charged particles that we are not interested
-            //
             //+-211 --> pions,  +-321 --> kaons, +-2212 --> protons
             if (abs(partid) != 211 && abs(partid) != 321 && abs(partid) != 2212) continue;
 
             if (TMath::Sqrt(pv[0] * pv[0] + pv[1] * pv[1]) < 0.0001) continue;
 
-            //cout << partid << "    " << pv[0] << "    " << pv[1] << "    " << pv[2] << endl;
 
             //Calculate the energy
             float energy = TMath::Sqrt(pv[0] * pv[0] + pv[1] * pv[1] + pv[2] * pv[2] + mass * mass);
@@ -203,8 +218,6 @@ void parseampt()
             p.py  = pv[1];
             p.pz  = pv[2];
 
-            eta_distribution_no_selection->Fill(p.eta);
-
             //mid-rapidity
             if (ifCNT(p.eta))
             {
@@ -220,7 +233,7 @@ void parseampt()
             }
 
             //FVTXS
-            if (ifFVTXS(p.eta)) 
+            if (ifFVTXS(p.eta) && test_eff_s(p.pT, p.eta)) 
             {
                 pA.push_back(p);
                 ct_fvtxs++;
@@ -249,58 +262,55 @@ void parseampt()
 
 void event_plane()
 {
-    v2s_BBCS[0] = new TProfile("v2s_BBCS_0", "v2s_BBCS_0", 14, 0.2, 3, -1.0, 1.0);
+    const int NPTBINS = 16;
+    double ptlim[NPTBINS + 1] = {
+        0.0, 0.2, 0.4, 0.6, 0.8, 1.0, 1.2, 1.4, 1.6, 1.8, 2.0,
+        2.5, 3.0, 3.5, 4.0, 4.5, 5.0
+    };
+    
+    v2s_FVTXS[0] = new TProfile("v2s_FVTXS_0", "v2s_FVTXS_0", NPTBINS, ptlim, -1.1, 1.1);
     res_comp[0] = new TProfile("res_comp_0", "res_comp_0", 6, 0.5, 6.5, -1.0, 1.0);
 
-    v2s_BBCS[1] = new TProfile("v2s_BBCS_1", "v2s_BBCS_1", 14, 0.2, 3, -1.0, 1.0);
+    v2s_FVTXS[1] = new TProfile("v2s_FVTXS_1", "v2s_FVTXS_1", NPTBINS, ptlim, -1.1, 1.1);
     res_comp[1] = new TProfile("res_comp_1", "res_comp_1", 6, 0.5, 6.5, -1.0, 1.0);
 
-    v2s_BBCS[2] = new TProfile("v2s_BBCS_2", "v2s_BBCS_2", 14, 0.2, 3, -1.0, 1.0);
+    v2s_FVTXS[2] = new TProfile("v2s_FVTXS_2", "v2s_FVTXS_2", NPTBINS, ptlim, -1.1, 1.1);
     res_comp[2] = new TProfile("res_comp_2", "res_comp_2", 6, 0.5, 6.5, -1.0, 1.0);
 
-    v2s_BBCS[3] = new TProfile("v2s_BBCS_3", "v2s_BBCS_3", 14, 0.2, 3, -1.0, 1.0);
+    v2s_FVTXS[3] = new TProfile("v2s_FVTXS_3", "v2s_FVTXS_3", NPTBINS, ptlim, -1.1, 1.1);
     res_comp[3] = new TProfile("res_comp_3", "res_comp_3", 6, 0.5, 6.5, -1.0, 1.0);
 
-    v2s_BBCS[4] = new TProfile("v2s_BBCS_4", "v2s_BBCS_4", 14, 0.2, 3, -1.0, 1.0);
+    v2s_FVTXS[4] = new TProfile("v2s_FVTXS_4", "v2s_FVTXS_4", NPTBINS, ptlim, -1.1, 1.1);
     res_comp[4] = new TProfile("res_comp_4", "res_comp_4", 6, 0.5, 6.5, -1.0, 1.0);
 
-    v2s_BBCS[5] = new TProfile("v2s_BBCS_5", "v2s_BBCS_5", 14, 0.2, 3, -1.0, 1.0);
+    v2s_FVTXS[5] = new TProfile("v2s_FVTXS_5", "v2s_FVTXS_5", NPTBINS, ptlim, -1.1, 1.1);
     res_comp[5] = new TProfile("res_comp_5", "res_comp_5", 6, 0.5, 6.5, -1.0, 1.0);
-    // v2s_FVTXS = new TProfile("v2s_FVTXS", "v2s_FVTXS", 14, 0.2, 3, -1.0, 1.0);
-    // dhis_1 = new TH1F("dhis_1", "dhis_1", 50, -0.5*TMath::Pi(), 1.5*TMath::Pi());
-    // dhis_2 = new TH1F("dhis_2", "dhis_2", 50, -0.5*TMath::Pi(), 1.5*TMath::Pi());
-    // dhis_3 = new TH1F("dhis_3", "dhis_3", 50, -0.5*TMath::Pi(), 1.5*TMath::Pi());
 
     dhis_bbcs = new TH1F("dhis_bbcs", "dhis_bbcs", 200, -0.5, 199.5);
-    // dhis_fvtxs = new TH1F("dhis_fvtxs", "dhis_fvtxs", 200, -0.5, 199.5);
-
-    eta_distribution_no_selection = new TH1F("eta_distribution_no_selection", "eta_distribution_no_selection", 200, -10, 10);
 
     hcount = new TH1F("hcount", "count", 6, 0, 6);
 
+    TFile *f_fvtxs = new TFile("fvtx_acc.root");
+    TFile *f_fvtxn = new TFile("fvtx_acc_n.root");
+
+    eff_fvtx_s = (TH2D*)f_fvtxs->Get("rh");
+    eff_fvtx_n = (TH2D*)f_fvtxn->Get("rh");
+
+    frandom = new TF1("frandom", "1", 0.0, 1.0);
+
     //Make a file to store outputs
-    TFile *fout = new TFile("ep_bbcs_0.root", "RECREATE");
+    TFile *fout = new TFile("out_EP.root", "RECREATE");
 
     parseampt();
 
     //Save graphs
-
     for (int i=0; i<6; i++)
     {
-        v2s_BBCS[i]->Write();
+        v2s_FVTXS[i]->Write();
         res_comp[i]->Write();
     }
-    
-    // v2s_FVTXS->Write();
-    // dhis_1->Write();
-    // dhis_2->Write();
-    // dhis_3->Write();
     hcount->Write();
-
-    eta_distribution_no_selection->Write();
-
     dhis_bbcs->Write();
-    // dhis_fvtxs->Write();
     
     fout->Close();
 }

@@ -70,15 +70,14 @@ TProfile* epsilon2_nch;
 
 TH1F *epsilon2_dis;
 TH1F *dhis_v2;
-
 TH1F *dhis_qn;
-
 TH1F *dhis_b;
-
 TH1F *dhis_eta;
 
-//-----------------------------------------------------------------------------------
-//Output file
+TH2D *eff_fvtx_s;
+TH2D *eff_fvtx_n;
+
+TF1 *frandom;
 
 //-----------------------------------------------------------------------------------
 //Test cout turn on/off set up
@@ -271,7 +270,32 @@ void  processEvent_ampt(int evtnumber, int ncharge, int index)
 	float qn = numerator / denominator;
 
 	dhis_qn->Fill(qn);
+}
 
+bool test_eff_s(float pT, float eta)
+{
+    int pTbin = eff_fvtx_s->GetXaxis()->FindBin(pT);
+    int etabin = eff_fvtx_s->GetYaxis()->FindBin(eta);
+
+    float n = eff_fvtx_s->GetBinContent(pTbin, etabin);
+
+    float test = frandom->GetRandom();
+
+    if (test < n) return true;
+    else return false;
+}
+
+bool test_eff_n(float pT, float eta)
+{
+    int pTbin = eff_fvtx_n->GetXaxis()->FindBin(pT);
+    int etabin = eff_fvtx_n->GetYaxis()->FindBin(eta);
+
+    float n = eff_fvtx_n->GetBinContent(pTbin, etabin);
+
+    float test = frandom->GetRandom();
+
+    if (test < n) return true;
+    else return false;
 }
 
 
@@ -279,7 +303,6 @@ void parse_ampt_file()
 {
     //Read in data file
     ifstream dataFile;
-    //dataFile.open("ampt.dat");
     dataFile.open("ana/ampt.dat");
 
     //Skip the job if not dataFile
@@ -379,18 +402,22 @@ void parse_ampt_file()
 void parton_pplane()
 {
     TFile *fout = new TFile("ppplane.root", "RECREATE");
+  
+    const int NPTBINS = 16;
+	double ptlim[NPTBINS + 1] = {
+		0.0, 0.2, 0.4, 0.6, 0.8, 1.0, 1.2, 1.4, 1.6, 1.8, 2.0,
+		2.5, 3.0, 3.5, 4.0, 4.5, 5.0
+	};
 
-    // 60, -0.5, 599.5, -10, 10
-    // 50, -0.5, 499.5, -10, 10     
     // 100, -0.5, 5999.5, -10, 10 Pb+Pb
     // 50, -0.5, 199.5, -10, 10    d+Au
-    v2s = new TProfile("v2s", "v2s", 100, -0.5, 1499.5, -10, 10); //
-    v2s_pt[0] = new TProfile("v2s_pt_0", "v2s_pt_0", 15, 0.0, 3.0, -1.0, 1.0);
-    v2s_pt[1] = new TProfile("v2s_pt_1", "v2s_pt_1", 15, 0.0, 3.0, -1.0, 1.0);
-    v2s_pt[2] = new TProfile("v2s_pt_2", "v2s_pt_2", 15, 0.0, 3.0, -1.0, 1.0);
-    v2s_pt[3] = new TProfile("v2s_pt_3", "v2s_pt_3", 15, 0.0, 3.0, -1.0, 1.0);
-    v2s_pt[4] = new TProfile("v2s_pt_4", "v2s_pt_4", 15, 0.0, 3.0, -1.0, 1.0);
-    v2s_pt[5] = new TProfile("v2s_pt_5", "v2s_pt_5", 15, 0.0, 3.0, -1.0, 1.0);
+    v2s = new TProfile("v2s", "v2s", 50, -0.5, 199.5, -10, 10); //
+    v2s_pt[0] = new TProfile("v2s_pt_0", "v2s_pt_0", NPTBINS, ptlim, -1.1, 1.1);
+    v2s_pt[1] = new TProfile("v2s_pt_1", "v2s_pt_1", NPTBINS, ptlim, -1.1, 1.1);
+    v2s_pt[2] = new TProfile("v2s_pt_2", "v2s_pt_2", NPTBINS, ptlim, -1.1, 1.1);
+    v2s_pt[3] = new TProfile("v2s_pt_3", "v2s_pt_3", NPTBINS, ptlim, -1.1, 1.1);
+    v2s_pt[4] = new TProfile("v2s_pt_4", "v2s_pt_4", NPTBINS, ptlim, -1.1, 1.1);
+    v2s_pt[5] = new TProfile("v2s_pt_5", "v2s_pt_5", NPTBINS, ptlim, -1.1, 1.1);
 
     epsilon2_nch = new TProfile("epsilon2_nch", "epsilon2_nch", 100, -0.5, 1499.5, -10, 10); //
 
@@ -400,14 +427,16 @@ void parton_pplane()
     dhis_b = new TH1F("dhis_b", "dhis_b", 50, 0, 20);
     dhis_eta = new TH1F("dhis_eta", "dhis_eta", 100, -10, 10);
 
+    TFile *f_fvtxs = new TFile("fvtx_acc.root");
+    TFile *f_fvtxn = new TFile("fvtx_acc_n.root");
+
+    eff_fvtx_s = (TH2D*)f_fvtxs->Get("rh");
+    eff_fvtx_n = (TH2D*)f_fvtxn->Get("rh");
+
+    frandom = new TF1("frandom", "1", 0.0, 1.0);
+
     parse_afterPropagation_file();
     parse_ampt_file();
-
-    //v2s->Write();
-    //v2s_pt->Write();
-    //epsilon2_dis->Write();
-    //dhis_v2->Write();
-    //dhis_qn->Write();
     
     fout->Write();
     fout->Close();

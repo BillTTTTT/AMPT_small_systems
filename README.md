@@ -8,13 +8,26 @@ http://myweb.ecu.edu/linz/ampt/
   
 With Javier's modified of Hulthen wavefunction input. The modified file could be found on rcf: /direct/phenix+u/pengqi/work/Ampt-v1.26t5-v2.26t5/hijing1.383_ampt.f  
   
+## Run on RCF
+To run these code on RCF, a shell script file and a "submit file" are required. Examples could be found here:  
+  
+.sh:    /direct/phenix+u/pengqi/work/run_ampt/run_backup.sh  
+submit: /direct/phenix+u/pengqi/work/run_ampt/submit_backup  
+  
+".sh" file contains everything from "input.ampt". You can edit collision energy, collision system, # events per job, hadronic scattering and partonic scattering.  
+"submit" file controls number of jobs to be submitted.  
+  
+Put the .C files into AMPT folder, then use command "condor_submit submit_backup" to submit jobs.  
+  
+  
+  
   
   
 ## Description of each file
 
 ### event_plane.C
 
-This code could be run directly at rcf.  
+This code could be run directly on rcf.  
 
 Written in C++, applying Event Plane method with three-sub events resolution. Three-sub events come from BBCS, FVTXS, FCTXN.  
 
@@ -36,7 +49,7 @@ It also contains N_ch distribution of BBCS (and FVTXS if need), eta distribution
   
 ### cumulant.C
 
-This code could be run directly at rcf. 
+This code could be run directly on rcf. 
 
 Written in C++, applying Multi-particle Correlation (Cumulant) Method with Ron's help with 4 and 6 particle cumulant equation. This file contains reference flow of 2,4,6 particle cumulant (usually used part in my project). And diferential flow of 2,4 particle cumulant (not often used in my projects). Formula and theory could be found from following paper: 
 
@@ -86,7 +99,7 @@ The variable name "raai" (i.e. raa2) means reference flow: <<i>> (i.e. <<2>>). "
   
 ### parton_pplane.C
   
-This code could be run directly at rcf.   
+This code could be run directly on rcf.   
   
 Written in C++, applying participant plane calculation with partons.  
   

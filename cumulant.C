@@ -53,10 +53,6 @@ struct particle
 };
 
 //-----------------------------------------------------------------------------------
-//Global variables declarations
-
-
-//-----------------------------------------------------------------------------------
 //Vector declarations
 vector<particle> p1[9];
 vector<particle> pA;
@@ -69,8 +65,6 @@ vector<float> temp_raa6;
 
 //-----------------------------------------------------------------------------------
 //Graphs declarations
-// vector<TProfile*> comp;
-// vector<TH2F*> comp;
 TProfile* comp;
 TProfile* daa2_with_gap;
 TProfile* daa2;
@@ -87,6 +81,11 @@ TProfile* raa6_Ncharge;
 
 TH1F* dnch;
 TH1F* bhis;
+
+TH2D *eff_fvtx_s;
+TH2D *eff_fvtx_n;
+
+TF1 *frandom;
 
 //-----------------------------------------------------------------------------------
 //Test cout turn on/off set up
@@ -337,7 +336,6 @@ void processEvent(vector<particle> nucleons, int n_charge)
 		float uy2 = TMath::Sin(2 * pA[i].phi);
 
 		float def_ave_2 = def_ave_2particle_with_gap(ux2, uy2, QxB, QyB, (float)pB.size());
-		// comp[flag]->Fill(4.0, def_ave_2);
 		daa2_with_gap->Fill(pA[i].pT, def_ave_2);
 		daa2_with_gap_Ncharge->Fill(n_charge, def_ave_2);
 	}
@@ -362,13 +360,36 @@ void processEvent(vector<particle> nucleons, int n_charge)
 
 		float def_ave_4 = def_ave_4particle_correlation(px2, py2, qx4, qy4, Qx2, Qy2, Qx4, Qy4, (float)nucleons.size(), 1, 1);
 
-		// cout << setw(15) << def_ave_4 << setw(15) << ron_def_4 << endl;
-		// comp[flag]->Fill(5.0, def_ave_4);
 		daa4->Fill(nucleons[i].pT, def_ave_4);
 		daa4_Ncharge->Fill(n_charge, def_ave_4);
 	}
 }
 
+bool test_eff_s(float pT, float eta)
+{
+    int pTbin = eff_fvtx_s->GetXaxis()->FindBin(pT);
+    int etabin = eff_fvtx_s->GetYaxis()->FindBin(eta);
+
+    float n = eff_fvtx_s->GetBinContent(pTbin, etabin);
+
+    float test = frandom->GetRandom();
+
+    if (test < n) return true;
+    else return false;
+}
+
+bool test_eff_n(float pT, float eta)
+{
+    int pTbin = eff_fvtx_n->GetXaxis()->FindBin(pT);
+    int etabin = eff_fvtx_n->GetYaxis()->FindBin(eta);
+
+    float n = eff_fvtx_n->GetBinContent(pTbin, etabin);
+
+    float test = frandom->GetRandom();
+
+    if (test < n) return true;
+    else return false;
+}
 
 void parseampt(int file_n)
 {
@@ -445,7 +466,7 @@ void parseampt(int file_n)
 			p.py  = pv[1];
 			p.pz  = pv[2];
 
-			if (ifFVTX(p.eta) && p.pT > 0.3 && p.pT < 3)
+			if ((ifFVTXS(p.eta) && test_eff_s(p.pT, p.eta)) || (ifFVTXN(p.eta) && test_eff_n(p.pT, p.eta)))
 			{
 				all_particle.push_back(p);
 				n_charge++;
@@ -453,8 +474,7 @@ void parseampt(int file_n)
 		}
 
 		processEvent(all_particle, n_charge);
-		// cout << n_charge << endl;
-		// cout << all_particle.size() << endl;
+
 		dnch->Fill(all_particle.size());
 		all_particle.clear();
 		pA.clear();
@@ -465,17 +485,11 @@ void parseampt(int file_n)
 
 void cumulant()
 {
-	// for (int i = 0; i < 9; i++)
-	// {
-	// 	comp.push_back(new TProfile(Form("comp_%i", i), Form("comp_%i", i), 5, 0.5, 5.5, -10, 10));
-	// }
 	comp = new TProfile("comp", "comp", 4, 0.5, 4.5, -10, 10);
 	daa2 = new TProfile("daa2", "daa2", 9, 0.2, 2.0, -10, 10);
 	daa2_with_gap = new TProfile("daa2_with_gap", "daa2_with_gap", 9, 0.2, 2.0, -10, 10);
 	daa4 = new TProfile("daa4", "daa4", 9, 0.2, 2.0, -10, 10);
 
-	// 60, -0.5, 599.5, -10, 10
-	// 50, -0.5, 499.5, -10, 10
 	// 100, -0.5, 5999.5, -10, 10   Pb+Pb
 	// 200, -0.5, 199.5, -10, 10   d+Au
 	comp_Ncharge = new TProfile("comp_Ncharge", "comp_Ncharge", 100, -0.5, 1499.5, -10, 10); //
@@ -489,6 +503,14 @@ void cumulant()
 
 	dnch = new TH1F("dnch", "dnch", 6000, -0.5, 5999.5);
 	bhis = new TH1F("bhis", "bhis", 100, 0, 20);
+
+	TFile *f_fvtxs = new TFile("fvtx_acc.root");
+    TFile *f_fvtxn = new TFile("fvtx_acc_n.root");
+
+    eff_fvtx_s = (TH2D*)f_fvtxs->Get("rh");
+    eff_fvtx_n = (TH2D*)f_fvtxn->Get("rh");
+
+    frandom = new TF1("frandom", "1", 0.0, 1.0);
 
 	for (int i = 0; i < 1; i++)
 	{
