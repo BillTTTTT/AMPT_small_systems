@@ -57,18 +57,11 @@ struct particle
 // --> d+Pb = 210
 // --> p+Pb = 209
 
-//BBC [-3.9,-3)
 vector<particle> pA;
-vector<particle> total_particles;
-
-//FVTXS [-3,-1)
 vector<particle> pB;
-
-//FVTXN [1,3)
 vector<particle> pC;
 
 TProfile* v2s_BBCS[6]; //v2s_BBCS
-// TProfile* v2s_FVTXS; //v2s_BBCS
 TProfile* res_comp[6];
 // TH1F* dhis_1;
 // TH1F* dhis_2;
@@ -132,11 +125,6 @@ void  processEvent(int index)
         float v2 = TMath::Cos(2 * (pC[i].phi - psiA));
         v2s_BBCS[index]->Fill(pC[i].pT, v2);
     }
-    // for (unsigned int i=0; i<total_particles.size(); i++)
-    // {
-    //     float v2 = TMath::Cos(2 * (total_particles[i].phi - psiA));
-    //     v2s_BBCS[index]->Fill(total_particles[i].pT, v2);
-    // }
 
     res_comp[index]->Fill(1.0, TMath::Cos(2 * (psiA - psiB)));
     res_comp[index]->Fill(2.0, TMath::Cos(2 * (psiA - psiC)));
@@ -218,7 +206,6 @@ void parseampt()
             eta_distribution_no_selection->Fill(p.eta);
 
             //mid-rapidity
-            // if (p.eta > -0.35 && p.eta < 0.35)
             if (ifCNT(p.eta))
             {
                 pC.push_back(p);
@@ -239,16 +226,10 @@ void parseampt()
                 ct_fvtxs++;
                 hcount->Fill(1);
             }
-
-            //FVTXN
-            // if (ifFVTXN(p.eta)) pC.push_back(p);
-
         }
 
         dhis_bbcs->Fill(ct_bbcs);
-        // dhis_fvtxs->Fill(ct_fvtxs);
 
-        // cout << total_particles.size() << endl;
         if (ct_bbcs >= 28) processEvent(0);
         if (ct_bbcs >= 24 && ct_bbcs < 28) processEvent(1);
         if (ct_bbcs >= 19 && ct_bbcs < 24) processEvent(2);
@@ -259,8 +240,6 @@ void parseampt()
         pA.clear();
         pB.clear();
         pC.clear();
-
-        // total_particles.clear();
 
         hcount->Fill(2);
 
