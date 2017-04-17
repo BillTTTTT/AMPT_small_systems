@@ -3,6 +3,7 @@
 //
 // Author: P. Yin
 //-----------------------------------------------
+
 #include <iostream>
 #include <iomanip>
 #include <fstream>
@@ -70,14 +71,20 @@ TProfile* epsilon2_nch;
 
 TH1F *epsilon2_dis;
 TH1F *dhis_v2;
+
 TH1F *dhis_qn;
+
 TH1F *dhis_b;
+
 TH1F *dhis_eta;
 
-TH2D *eff_fvtx_s;
-TH2D *eff_fvtx_n;
+TH1D *eff_fvtx_s;
+TH1D *eff_fvtx_n;
 
 TF1 *frandom;
+
+//-----------------------------------------------------------------------------------
+//Output file
 
 //-----------------------------------------------------------------------------------
 //Test cout turn on/off set up
@@ -130,9 +137,6 @@ void  processEvent_melting()
 	qx2 = qx2 / (float)count;
 	qy2 = qy2 / (float)count;
 
-	// qx3 = qx3 / (float)count;
-	// qy3 = qy3 / (float)count;
-
 	aver2    = aver2 / (float)count;
 
 	float temp_psi2 = (TMath::ATan2(qy2, qx2) + TMath::Pi()) / 2;
@@ -149,7 +153,6 @@ void parse_afterPropagation_file()
 {
 	//Read in data file
 	ifstream partonFile;
-	//partonFile.open("parton-initial-afterPropagation.dat");
 	partonFile.open("ana/parton-initial-afterPropagation.dat");
 
 	//Skip the job if not partonFile
@@ -211,6 +214,12 @@ void parse_afterPropagation_file()
 			if (abs(p.eta) < 3 && p.t < 3) partons.push_back(p);
 		}
 
+		if (iteration > 0)
+		{
+			ep2.pop_back();
+			psi2.pop_back();
+		}
+		
 		processEvent_melting();
 
 		partons.clear();
@@ -270,14 +279,14 @@ void  processEvent_ampt(int evtnumber, int ncharge, int index)
 	float qn = numerator / denominator;
 
 	dhis_qn->Fill(qn);
+
 }
 
 bool test_eff_s(float pT, float eta)
 {
     int pTbin = eff_fvtx_s->GetXaxis()->FindBin(pT);
-    int etabin = eff_fvtx_s->GetYaxis()->FindBin(eta);
 
-    float n = eff_fvtx_s->GetBinContent(pTbin, etabin);
+    float n = eff_fvtx_s->GetBinContent(pTbin);
 
     float test = frandom->GetRandom();
 
@@ -288,9 +297,8 @@ bool test_eff_s(float pT, float eta)
 bool test_eff_n(float pT, float eta)
 {
     int pTbin = eff_fvtx_n->GetXaxis()->FindBin(pT);
-    int etabin = eff_fvtx_n->GetYaxis()->FindBin(eta);
 
-    float n = eff_fvtx_n->GetBinContent(pTbin, etabin);
+    float n = eff_fvtx_n->GetBinContent(pTbin);
 
     float test = frandom->GetRandom();
 
@@ -383,12 +391,11 @@ void parse_ampt_file()
 
         }
 
-        if (ct_bbcs >= 28) processEvent_ampt(event_counter, ncharge, 0);
-        if (ct_bbcs >= 24 && ct_bbcs < 28) processEvent_ampt(event_counter, ncharge, 1);
-        if (ct_bbcs >= 19 && ct_bbcs < 24) processEvent_ampt(event_counter, ncharge, 2);
-        if (ct_bbcs >= 12 && ct_bbcs < 19) processEvent_ampt(event_counter, ncharge, 3);
-        if (ct_bbcs >=  7 && ct_bbcs < 12) processEvent_ampt(event_counter, ncharge, 4);
-        if (ct_bbcs < 7) processEvent_ampt(event_counter, ncharge, 5);
+        if (ct_bbcs >= 8) processEvent_ampt(event_counter, ncharge, 0);
+        if (ct_bbcs >= 7 && ct_bbcs < 8) processEvent_ampt(event_counter, ncharge, 1);
+        if (ct_bbcs >= 4 && ct_bbcs < 7) processEvent_ampt(event_counter, ncharge, 2);
+        if (ct_bbcs >= 2 && ct_bbcs < 4) processEvent_ampt(event_counter, ncharge, 3);
+        if (ct_bbcs < 2) processEvent_ampt(event_counter, ncharge, 4);
 
         final_p.clear();
 
@@ -401,16 +408,14 @@ void parse_ampt_file()
 
 void parton_pplane()
 {
-    TFile *fout = new TFile("ppplane.root", "RECREATE");
-  
+    TFile *fout = new TFile("ppplane_pt.root", "RECREATE");
+
     const int NPTBINS = 16;
 	double ptlim[NPTBINS + 1] = {
 		0.0, 0.2, 0.4, 0.6, 0.8, 1.0, 1.2, 1.4, 1.6, 1.8, 2.0,
 		2.5, 3.0, 3.5, 4.0, 4.5, 5.0
 	};
 
-    // 100, -0.5, 5999.5, -10, 10 Pb+Pb
-    // 50, -0.5, 199.5, -10, 10    d+Au
     v2s = new TProfile("v2s", "v2s", 50, -0.5, 199.5, -10, 10); //
     v2s_pt[0] = new TProfile("v2s_pt_0", "v2s_pt_0", NPTBINS, ptlim, -1.1, 1.1);
     v2s_pt[1] = new TProfile("v2s_pt_1", "v2s_pt_1", NPTBINS, ptlim, -1.1, 1.1);
@@ -427,11 +432,14 @@ void parton_pplane()
     dhis_b = new TH1F("dhis_b", "dhis_b", 50, 0, 20);
     dhis_eta = new TH1F("dhis_eta", "dhis_eta", 100, -10, 10);
 
-    TFile *f_fvtxs = new TFile("fvtx_acc.root");
-    TFile *f_fvtxn = new TFile("fvtx_acc_n.root");
+    TFile *f_fvtxs = new TFile("fvtx_acc_n.root");
+    TFile *f_fvtxn = new TFile("fvtx_acc.root");
 
-    eff_fvtx_s = (TH2D*)f_fvtxs->Get("rh");
-    eff_fvtx_n = (TH2D*)f_fvtxn->Get("rh");
+    eff_fvtx_s = (TH1D*)f_fvtxs->Get("rh1");
+    eff_fvtx_n = (TH1D*)f_fvtxn->Get("rh1");
+
+    eff_fvtx_s->Scale(1./eff_fvtx_s->GetMaximum());
+    eff_fvtx_n->Scale(1./eff_fvtx_n->GetMaximum());
 
     frandom = new TF1("frandom", "1", 0.0, 1.0);
 
